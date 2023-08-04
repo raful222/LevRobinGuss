@@ -57,10 +57,10 @@ namespace LevRobinGuss.Jobs
             try
             {
 
-                var privateKey = "53f1716172320f33a9254da404fa8bbe2f233e9af1acfa41c1734b4bb47ceda5";
+                var privateKey = "aaa";
                 var account = new Account(privateKey); // or load it from your keystore file as you are doing.
 
-                var web3 = new Web3(account, "https://goerli.infura.io/v3/ec686ca032bc4f0da49034e99646a762");
+                var web3 = new Web3(account, "https://goerli.infura.io/v3/YOUINFURAADRESS");
 
                 var contractAddress = "0xd6636468f2a74f44159f0f02eebacf6edfcd40f2";
                 string abi = @"[
@@ -762,7 +762,7 @@ namespace LevRobinGuss.Jobs
                                 {
                                     // Convert to Wei using Nethereum's UnitConversion utility
                                     BigInteger amountInWei = UnitConversion.Convert.ToWei(newValue);
-                                    var nonce = await web3.Eth.Transactions.GetTransactionCount.SendRequestAsync("0x26f250197A8356bDEFC923838d9c5F17476ce55E");
+                                    var nonce = await web3.Eth.Transactions.GetTransactionCount.SendRequestAsync("YOUADMINADDRESS");
                                     //var transferFunction = contract.GetFunction("SendBit");
                                     byte[] bytes = Encoding.UTF8.GetBytes("user bet " + winornot +whatHapped + "user paid");
                                     var transferFunction = contract.GetFunction("transfer");
@@ -781,7 +781,7 @@ namespace LevRobinGuss.Jobs
                                     var txParams = new TransactionInput
                                     {
                                         To = contractAddress,
-                                        From = "0x26f250197A8356bDEFC923838d9c5F17476ce55E",
+                                        From = "YOUADMINADDRESS",
                                         Gas = new HexBigInteger(200000), // You can set an appropriate gas value here
                                         GasPrice = new HexBigInteger(20000000000), // You can set an appropriate gas price here
                                         Nonce = nonce,
