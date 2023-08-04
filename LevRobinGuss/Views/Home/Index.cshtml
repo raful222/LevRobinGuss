@@ -1,0 +1,944 @@
+﻿@using LevRobinGuss.VIewModels
+@using LevRobinGuss.Core.Entities
+@model HomeViewModel
+@{
+    var random = new Random();
+    var randomNumber = 0.5;// Generate a random number between 1 and 100
+    var ans = "";
+
+}
+@*<button onclick="connectWallet()"> Connect wallet </button>*@
+
+@if (User.Identity.IsAuthenticated)
+{
+    <button id="connectButton">התחבר  to MetaMask</button>
+    @*<button id="connectWallet">התחבר  to MetaMask</button>*@
+    <button id="transferButton" disabled> קבל סכום ראשוני למשחק</button>
+}
+
+<table>
+
+    <tbody>
+        <h3>competitions : @Model.GameMatches.ResultSet.Competitions </h3>
+
+        @foreach (var team in Model.GameMatches.Matches)
+        {
+
+            <tr>
+                <td>
+                    @team.UtcDate.ToString("dd/MM/yy HH:mm")
+                </td>
+                <td>
+                    @if (team.Status == "FINISHED")
+                    {
+                        <strong>
+                            @team.Score.FullTime.Home : @team.Score.FullTime.Away
+                        </strong>
+                    }
+                </td>
+                <td>
+                    @if (team.Status == "FINISHED")
+                    {
+                        <label for="betAmountInput">Enter Bet Amount:</label>
+                        <input asp-for="GameViewModel.AmountBet" id="betAmountInput" type="number" min="0" step="0.01" data-val="true" data-val-number="The field AmountBet must be a number." data-val-required="The AmountBet field is required." />
+                    }
+
+                </td>
+                <td>
+
+                    @{
+                        randomNumber = (random.NextDouble() * 3);
+                        ans = randomNumber >= 1 ? randomNumber.ToString("F2") : 1.1.ToString();
+                    }
+                    <a href="javascript:void(0);" class="submitBetForm" data-gameid="@team.Id" data-betpercentage="@ans" data-betonhouse="@WinOrNot.Win" data-amount="@Model.GameViewModel.AmountBet">
+
+                        <img src="@team.HomeTeam.Crest" alt="@team.HomeTeam.ShortName" />
+                        @team.HomeTeam.Name
+                        <strong>@ans</strong>
+
+                    </a>
+
+                </td>
+                <td>
+                    @{
+                        randomNumber = (random.NextDouble() * 3);
+                        ans = randomNumber >= 1 ? randomNumber.ToString("F2") : 1.1.ToString();
+                    }
+                    <a href="javascript:void(0);" class="submitBetForm" data-gameid="@team.Id" data-betpercentage="@ans" data-betonhouse="@WinOrNot.Draw" data-amount="@Model.GameViewModel.AmountBet">
+                        X<strong>@ans  </strong>
+                    </a>
+                </td>
+                <td>
+                    @{
+                        randomNumber = (random.NextDouble() * 3);
+                        ans = randomNumber >= 1 ? randomNumber.ToString("F2") : 1.1.ToString();
+                    }
+                    <a href="javascript:void(0);" class="submitBetForm" data-gameid="@team.Id" data-betpercentage="@ans" data-betonhouse="@WinOrNot.Lose" data-amount="@Model.GameViewModel.AmountBet">
+
+                        <img src="@team.AwayTeam.Crest" alt="@team.AwayTeam.ShortName" />  @team.AwayTeam.Name
+                        <strong>@ans</strong>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@section Scripts {
+
+<script>
+     function submitForm(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        // Get the form data using FormData
+        var form = event.target;
+        var formData = new FormData(form);
+
+        // Make the AJAX request
+        $.ajax({
+            url: '/api/your-endpoint',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Handle the successful response
+                console.log(response);
+            },
+            error: function(xhr, status, error) {
+                // Handle the error
+                console.error(error);
+            }
+        });
+    }
+
+    // Attach the submit event listener to the form
+    $('#your-form').on('submit', submitForm);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+<script src=~/js/Index.js></script>
+
+<script>
+                        // Load Contract ABI from ContractABI.json
+                       // Connect to MetaMask
+
+                    const loadContractABI = async () => {
+                        const response = await fetch('ContractABI/ContractABI.json');
+                        const contractABI = await response.json();
+                        return contractABI;
+                    };
+
+                    // Connect to MetaMask and Transfer Funds
+                    document.addEventListener('DOMContentLoaded', async () => {
+                        const connectButton = document.getElementById('connectButton');
+                        const transferButton = document.getElementById('transferButton');
+      const amountInput = document.getElementById("betAmountInput");
+
+
+
+                        connectButton.addEventListener('click', async () => {
+                            if (typeof window.ethereum !== 'undefined') {
+                                try {
+                                    // Connect to MetaMask
+                                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                                    await window.ethereum.enable();
+                                    connectButton.disabled = true;
+                                    transferButton.disabled = false;
+                                    console.log('Connected to MetaMask');
+                                } catch (error) {
+                                    console.error('Error connecting to MetaMask:', error);
+                                }
+                            } else {
+                                console.error('MetaMask not found');
+                            }
+                        });
+
+                            transferButton.addEventListener('click', async () => {
+                                              transferButton.disabled = true;
+
+                                                        const web3 = new Web3(new Web3.providers.HttpProvider('https://goerli.infura.io/v3/ec686ca032bc4f0da49034e99646a762')); // Replace with your Infura project ID
+                                                        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                                                        const userAccount = accounts[0]; // Assuming the first account is used
+                                                        console.log(userAccount);
+                                                        const contractAddress = '0xd6636468f2a74f44159f0f02eebacf6edfcd40f2'; // Replace with your smart contract address
+                                                        const privteKey = '53f1716172320f33a9254da404fa8bbe2f233e9af1acfa41c1734b4bb47ceda5'
+                                                            const contractABI = await abi();
+                                                        const contract = new web3.eth.Contract(contractABI, contractAddress);
+                                                        const gasLimit = 50000000000; // Set an appropriate gas limit value
+                                                        //const functions = contract.methods[functionName];
+                                                            web3.eth.getBalance(userAccount, function (error, balance) {
+                                                              if (error) {
+                                                                console.error('Error retrieving sender balance:', error);
+                                                                return;
+                                                              }
+                                                               const balanceInEther = web3.utils.fromWei(balance, 'ether');
+                                                              console.log('Sender Balance:', balanceInEther);
+
+                                                              if (balance < gasLimit) {
+                                                                console.error('Insufficient Ether balance to cover gas cost');
+                                                                return;
+                                                              }
+                                                              console.log(contract)
+                                                              contract.methods.totalSupply().call().then(function(totalSupply){
+                                                               console.log(`Total Supply with a promise:  ${totalSupply}`);
+                                                           }).catch(function(err) {
+                                                               console.log(err);
+                                                           });
+                                                           });
+                                                         transferTokens();
+                                                          async function transferTokens() {
+                                                          const userAccount = accounts[0];
+                                                          console.log(userAccount);
+                                                          const amount =  1000000000000000000; // Amount in wei (0.01 ETH in this example)
+                                                          const AdminAddress = '0x26f250197A8356bDEFC923838d9c5F17476ce55E'; // Replace with the recipient's address
+                                                          const amountInWei = web3.utils.toHex(amount);
+                                                          var nonce = await web3.eth.getTransactionCount(AdminAddress)
+                                                          console.log(typeof amountInWei);
+                                                          const transfer = await contract.methods.transfer(userAccount, amountInWei);
+                                                          const tx_params = {
+                                                          from: AdminAddress,
+                                                          nonce: web3.utils.toHex(nonce),
+                                                          gas: 20000,
+                                                          gasPrice: gasLimit
+                                                          };
+
+                                                           transfer.estimateGas(tx_params)
+                                                            .then((gas_estimate) => {
+                                                                // Update the gas parameter if the estimate is higher
+                                                                if (gas_estimate > tx_params.gas) {
+                                                                    tx_params.gas = gas_estimate;
+                                                                }
+                                                             const raw_txn = transfer.encodeABI();
+
+                                              async function signAndSendTransaction(tx_params,privteKey) {
+                                                          try {
+                                                        const signed_txn = await web3.eth.accounts.signTransaction(tx_params, privteKey);
+                                                            const transactionReceipt = await web3.eth.sendSignedTransaction(signed_txn.rawTransaction);
+                                                          console.log('Transaction successful. Transaction hash:', transactionReceipt.transactionHash);
+                                                        } catch (error) {
+                                                          console.error('Transaction error:', error);
+                                                        };
+                                                      }
+
+                                                      signAndSendTransaction(tx_params,privteKey);
+                                                        });
+
+                                                                              };
+                                                                });
+
+    document.querySelectorAll('.submitBetForm').forEach((element) => {
+            element.addEventListener('click', async function () {
+
+                                   try {
+                var gameId = this.dataset.gameid;
+                var betPercentage = this.dataset.betpercentage;
+                var betOnHousea = this.dataset.betonhouse;
+        var amount = amountInput.value; // Read the value directly from the input field
+                console.log("Game ID:", gameId);
+                console.log("Bet Percentage:", betPercentage);
+                console.log("Bet On House:", betOnHousea);
+                console.log("Amount:", amount);
+
+
+
+
+
+                                                        const web3 = new Web3(new Web3.providers.HttpProvider('https://goerli.infura.io/v3/ec686ca032bc4f0da49034e99646a762')); // Replace with your Infura project ID
+                                                        const contractAddress = '0xd6636468f2a74f44159f0f02eebacf6edfcd40f2'; // Replace with your smart contract address
+                                                            const contractABI = await abi();
+                                                        // Rest of the code...
+                                                        const contract = new web3.eth.Contract(contractABI, contractAddress);
+                                                         const privateKey = '53f1716172320f33a9254da404fa8bbe2f233e9af1acfa41c1734b4bb47ceda5'
+                                                        const privteKey2 = '6f9ed8f4cbd055707517b51dcc955184629ff25e82a0beb57fd397ba710dcfba'
+
+                                                        //const amountToSend = web3.utils.toWei("0.1", "ether"); // Example: Sending 0.1 Ether
+                                                        const values = web3.utils.toWei(amount, "ether"); // Example: Sending 0.1 Ether
+                                                        const amountInWei = web3.utils.toWei('10000000000000000', 'ether'); // Replace with the amount of tokens you want to approve
+
+                                                            const spenderAddress = '0x26f250197A8356bDEFC923838d9c5F17476ce55E'; // Replace with the address of the Ler token contract
+
+                                                          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                                                        const betPercentages = Web3.utils.toWei(betPercentage.toString(), 'ether');
+                                                          const balance = await contract.methods.balanceOf(accounts[0]).call();
+                                                        console.log('Token balance of', accounts[0], 'is', balance);
+                                                          const data = contract.methods.approve(accounts[0], amountInWei).encodeABI();
+                                                          const nonce = await web3.eth.getTransactionCount(accounts[0]) ;
+                                                          const noncea = nonce+1;
+                                                          const gasLimit = 100000; // You can adjust this value as needed based on the gas estimation or contract complexity
+                                                          const gasPrice = web3.utils.toHex(web3.utils.toWei('10', 'gwei'));
+
+                                                        const tx = {
+                                                          from: accounts[0],
+                                                          to: contractAddress,
+                                                        gas: web3.utils.toHex(gasLimit),
+                                                             gasPrice: gasPrice,
+                                                          data: data,
+                                                          nonce: web3.utils.toHex(noncea),
+                                                        };
+
+                                                        const signedTx = await web3.eth.accounts.signTransaction(tx, privteKey2);
+                                                        web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+                                                          .on('transactionHash', (hash) => {
+                                                            console.log('Transaction hash:', hash);
+                                                          })
+                                                          .on('receipt', (receipt) => {
+                                                            console.log('Transaction receipt:', receipt);
+                                                          })
+                                                          .on('error', (error) => {
+                                                            console.error('Transaction error:', error);
+                                                          });
+                                                          const allowanceAmount = await contract.methods.allowance(accounts[0], contractAddress).call();
+
+                                                        console.log('Allowance amount for spender:', allowanceAmount);
+                                                    //console.log('Approval transaction mined');
+                                                        const betOnHouse = web3.utils.utf8ToHex(betOnHousea +" client bet"); // Convert the string to bytes32
+                                                        const receiverAddress = '0x26f250197A8356bDEFC923838d9c5F17476ce55E'; // Replace with the address of the Ler token contract
+                                                        const transfer = await contract.methods.SendBit(values, betPercentages ,betOnHouse,gameId);
+
+
+                                                        const encodedTransaction =await transfer.encodeABI();
+                                                        const tx_params = {
+                                                        from: accounts[0],
+                                                        to: contractAddress,
+                                                        gas: web3.utils.toHex(400000), // Convert the gas limit (number) to hexadecimal string
+                                                         data: encodedTransaction,
+                                                          };
+                                                          signAndSendTransaction(tx_params);
+                                                          async function signAndSendTransaction(tx_params) {
+                                                                     window.ethereum
+                                                                          .request({
+                                                                            method: 'eth_sendTransaction',
+                                                                            params: [tx_params],
+                                                                          })
+                                                                          .then((transactionHash) => {
+                                                                            // Transaction successful, do something with the transaction hash if needed
+                                                                            console.log('Transaction hash:', transactionHash);
+                                                                          })
+                                                                          .catch((error) => {
+                                                                            // Transaction failed, handle the error
+                                                                            console.error('Transaction error:', error);
+                                                                          });
+
+                                                                };
+
+                                                           } catch (error) {
+                                                          console.error('Transaction error:', error);
+                                                        };
+                                                        });
+
+                                                        });
+
+
+
+
+                                                            });
+
+
+                    async function abi() {
+                    return [
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "approve",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address",
+                    "name": "tokenContractAddress",
+                    "type": "address"
+                }
+            ],
+            "name": "approveTokenTransfer",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "burn",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "account",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "burnFrom",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "buy",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "requestedDecrease",
+                    "type": "uint256"
+                }
+            ],
+            "name": "decreaseAllowance",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "currentAllowance",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "requestedDecrease",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ERC20FailedDecreaseAllowance",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "allowance",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "needed",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ERC20InsufficientAllowance",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "sender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "balance",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "needed",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ERC20InsufficientBalance",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "approver",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidApprover",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "receiver",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidReceiver",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "sender",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidSender",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidSpender",
+            "type": "error"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Approval",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "address",
+                    "name": "sender",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "bettingPercentage",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bytes32",
+                    "name": "betOnHouse",
+                    "type": "bytes32"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "int256",
+                    "name": "gameId",
+                    "type": "int256"
+                }
+            ],
+            "name": "BetInfo",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "addedValue",
+                    "type": "uint256"
+                }
+            ],
+            "name": "increaseAllowance",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "bettingPercentage",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bytes32",
+                    "name": "betOnHouse",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "int256",
+                    "name": "gameId",
+                    "type": "int256"
+                }
+            ],
+            "name": "SendBit",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transfer",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Transfer",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transferFrom",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "withdrawEther",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "adminAddress",
+            "outputs": [
+                {
+                    "internalType": "address payable",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                }
+            ],
+            "name": "allowance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "account",
+                    "type": "address"
+                }
+            ],
+            "name": "balanceOf",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "balances",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getAdminBalance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "account",
+                    "type": "address"
+                }
+            ],
+            "name": "getBalance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getSenderBalance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "name",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "symbol",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "totalSupply",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ]
+                }
+
+</script>
+
+}

@@ -1,0 +1,37 @@
+﻿@using LevRobinGuss.VIewModels
+@model LoginViewModel
+
+
+<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+<div id="login" class="container">
+    <div class="row-fluid">
+        <div class="span12">
+            <div class="login well well-small">
+                <h2 class="center">
+                    התחברות
+                </h2>
+                <br />
+                @*<div class="center">
+                    <img src="http://placehold.it/250x100&text=Logo" alt="logo">
+                </div>*@
+                <form asp-action="Login" asp-controller="account" style="" class="login-form" id="UserLoginForm" method="post" accept-charset="utf-8">
+                    <div class="control-group">
+                        <div class="input-prepend">
+                            <span class="add-on"><i class="icon-user"></i></span>
+                            <input asp-for="UserName" type="text" placeholder="שם משתמש">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="input-prepend">
+                            <span class="add-on"><i class="icon-lock"></i></span>
+                            <input asp-for="Password" type="password" placeholder=" סיסמה">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <input class="btn btn-primary btn-large btn-block" type="submit" value="התחבר ">
+                    </div>
+                </form>
+            </div><!--/.login-->
+        </div><!--/.span12-->
+    </div><!--/.row-fluid-->
+</div><!--/.container-->
