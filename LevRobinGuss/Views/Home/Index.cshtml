@@ -157,12 +157,12 @@
                             transferButton.addEventListener('click', async () => {
                                               transferButton.disabled = true;
 
-                                                        const web3 = new Web3(new Web3.providers.HttpProvider('https://goerli.infura.io/v3/ec686ca032bc4f0da49034e99646a762')); // Replace with your Infura project ID
+                                                        const web3 = new Web3(new Web3.providers.HttpProvider('https://goerli.infura.io/v3/YOUINFURAKEY')); // Replace with your Infura project ID
                                                         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                                                         const userAccount = accounts[0]; // Assuming the first account is used
                                                         console.log(userAccount);
                                                         const contractAddress = '0xd6636468f2a74f44159f0f02eebacf6edfcd40f2'; // Replace with your smart contract address
-                                                        const privteKey = '53f1716172320f33a9254da404fa8bbe2f233e9af1acfa41c1734b4bb47ceda5'
+                                                        const privteKey = 'AA'
                                                             const contractABI = await abi();
                                                         const contract = new web3.eth.Contract(contractABI, contractAddress);
                                                         const gasLimit = 50000000000; // Set an appropriate gas limit value
@@ -191,7 +191,7 @@
                                                           const userAccount = accounts[0];
                                                           console.log(userAccount);
                                                           const amount =  1000000000000000000; // Amount in wei (0.01 ETH in this example)
-                                                          const AdminAddress = '0x26f250197A8356bDEFC923838d9c5F17476ce55E'; // Replace with the recipient's address
+                                                          const AdminAddress = 'YOUADMINADDRESS'; // Replace with the recipient's address
                                                           const amountInWei = web3.utils.toHex(amount);
                                                           var nonce = await web3.eth.getTransactionCount(AdminAddress)
                                                           console.log(typeof amountInWei);
@@ -244,19 +244,19 @@
 
 
 
-                                                        const web3 = new Web3(new Web3.providers.HttpProvider('https://goerli.infura.io/v3/ec686ca032bc4f0da49034e99646a762')); // Replace with your Infura project ID
+                                                        const web3 = new Web3(new Web3.providers.HttpProvider('https://goerli.infura.io/v3/YOUINFURAAKEY')); // Replace with your Infura project ID
                                                         const contractAddress = '0xd6636468f2a74f44159f0f02eebacf6edfcd40f2'; // Replace with your smart contract address
                                                             const contractABI = await abi();
                                                         // Rest of the code...
                                                         const contract = new web3.eth.Contract(contractABI, contractAddress);
-                                                         const privateKey = '53f1716172320f33a9254da404fa8bbe2f233e9af1acfa41c1734b4bb47ceda5'
-                                                        const privteKey2 = '6f9ed8f4cbd055707517b51dcc955184629ff25e82a0beb57fd397ba710dcfba'
+                                                         const privateKey = 'AA'
+                                                        const privteKey2 = 'BB'
 
                                                         //const amountToSend = web3.utils.toWei("0.1", "ether"); // Example: Sending 0.1 Ether
                                                         const values = web3.utils.toWei(amount, "ether"); // Example: Sending 0.1 Ether
                                                         const amountInWei = web3.utils.toWei('10000000000000000', 'ether'); // Replace with the amount of tokens you want to approve
 
-                                                            const spenderAddress = '0x26f250197A8356bDEFC923838d9c5F17476ce55E'; // Replace with the address of the Ler token contract
+                                                            const spenderAddress = 'YOUADMINADDRESS'; // Replace with the address of the Ler token contract
 
                                                           const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                                                         const betPercentages = Web3.utils.toWei(betPercentage.toString(), 'ether');
